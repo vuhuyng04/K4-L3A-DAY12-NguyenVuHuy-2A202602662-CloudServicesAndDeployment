@@ -115,3 +115,4 @@ Log JSON tương ứng trên Render (runtime log):
 
 - `screenshots/dashboard.png` — trang quản lý service trên platform
 - `screenshots/health.png` — kết quả gọi `/health` từ trình duyệt hoặc curl
+- `screenshots/ready.png` — kết quả gọi `/ready` (đã nối Redis: `"redis": true`)
