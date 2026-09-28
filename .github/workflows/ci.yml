@@ -53,9 +53,13 @@ jobs:
         run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
       - name: Smoke test
+        env:
+          # URL công khai không phải secret → cho phép mặc định khi chưa đặt Variable PUBLIC_URL
+          PUBLIC_URL: ${{ vars.PUBLIC_URL || 'https://day12-agent-kdg4.onrender.com' }}
         run: |
+          echo "smoke test: $PUBLIC_URL/health"
           for i in $(seq 1 20); do
-            if curl -fsS "${{ vars.PUBLIC_URL }}/health"; then
+            if curl -fsS "$PUBLIC_URL/health"; then
               echo; echo "service healthy"; exit 0
             fi
             echo "chưa sẵn sàng, thử lại sau 15s ($i/20)"
