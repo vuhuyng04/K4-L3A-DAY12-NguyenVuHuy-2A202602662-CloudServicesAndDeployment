@@ -116,3 +116,10 @@ Log JSON tương ứng trên Render (runtime log):
 - `screenshots/dashboard.png` — trang quản lý service trên platform
 - `screenshots/health.png` — kết quả gọi `/health` từ trình duyệt hoặc curl
 - `screenshots/ready.png` — kết quả gọi `/ready` (đã nối Redis: `"redis": true`)
+- `screenshots/demo-ui.png` — trang demo tại `/` trên bản deploy: chat qua `/ask`, trạng thái
+  `/health` + `/ready`, burst 12 request (8 × 200 rồi 4 × 429) và gọi không key (401)
+
+## Demo UI
+
+Mở Public URL (đường dẫn `/`) trên trình duyệt, nhập `AGENT_API_KEY` vào ô API key
+(key chỉ lưu trong sessionStorage của tab, không nằm trong mã trang) rồi chat với agent.
