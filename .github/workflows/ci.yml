@@ -1,0 +1,64 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run checkpoint tests
+        env:
+          AGENT_API_KEY: ci-dummy
+          REDIS_URL: "fake://"
+        # test_cp5 gọi vào bản deploy sống, test_bonus_cicd kiểm tra badge của chính workflow này
+        run: pytest tests/ -v -m "not docker" --ignore=tests/test_cp5.py --ignore=tests/test_bonus_cicd.py
+
+  build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t day12-agent:${{ github.sha }} .
+
+      - name: Show image size
+        run: docker images day12-agent:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Render
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS "${{ vars.PUBLIC_URL }}/health"; then
+              echo; echo "service healthy"; exit 0
+            fi
+            echo "chưa sẵn sàng, thử lại sau 15s ($i/20)"
+            sleep 15
+          done
+          echo "smoke test thất bại"; exit 1
